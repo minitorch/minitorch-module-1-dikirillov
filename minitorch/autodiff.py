@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Any, Iterable, List, Tuple
 
 from typing_extensions import Protocol
+from collections import defaultdict
 
 # ## Task 1.1
 # Central Difference calculation
@@ -22,8 +23,8 @@ def central_difference(f: Any, *vals: Any, arg: int = 0, epsilon: float = 1e-6) 
     Returns:
         An approximation of $f'_i(x_0, \ldots, x_{n-1})$
     """
-    # TODO: Implement for Task 1.1.
-    raise NotImplementedError("Need to implement for Task 1.1")
+    new_f_input = [elem if ind != arg else elem + epsilon for ind, elem in enumerate(vals)]
+    return (f(*new_f_input) - f(*vals)) / epsilon
 
 
 variable_count = 1
@@ -61,8 +62,19 @@ def topological_sort(variable: Variable) -> Iterable[Variable]:
     Returns:
         Non-constant Variables in topological order starting from the right.
     """
-    # TODO: Implement for Task 1.4.
-    raise NotImplementedError("Need to implement for Task 1.4")
+    visited = set()
+    top_sort_nodes = []
+
+    def dfs(node):
+        if node.unique_id in visited or node.is_constant():
+            return
+        visited.add(node.unique_id)
+        for parent_node in node.parents:
+            dfs(parent_node)
+        top_sort_nodes.append(node)
+    
+    dfs(variable)
+    return top_sort_nodes[::-1]
 
 
 def backpropagate(variable: Variable, deriv: Any) -> None:
@@ -76,8 +88,18 @@ def backpropagate(variable: Variable, deriv: Any) -> None:
 
     No return. Should write to its results to the derivative values of each leaf through `accumulate_derivative`.
     """
-    # TODO: Implement for Task 1.4.
-    raise NotImplementedError("Need to implement for Task 1.4")
+    derivaties = defaultdict(float)
+    derivaties[variable.unique_id] = deriv
+
+    for node in topological_sort(variable):
+        if node.is_leaf():
+            continue
+
+        for accum_node, accum_deriv in node.chain_rule(derivaties[node.unique_id]):
+            if accum_node.is_leaf():
+                accum_node.accumulate_derivative(accum_deriv)
+            else:
+                derivaties[accum_node.unique_id] += accum_deriv
 
 
 @dataclass
