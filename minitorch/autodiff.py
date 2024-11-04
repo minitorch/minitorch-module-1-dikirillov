@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Iterable, List, Tuple
+from typing import Any, Iterable, Tuple
 
 from typing_extensions import Protocol
 from collections import defaultdict
@@ -72,7 +72,7 @@ def topological_sort(variable: Variable) -> Iterable[Variable]:
         for parent_node in node.parents:
             dfs(parent_node)
         top_sort_nodes.append(node)
-    
+
     dfs(variable)
     return top_sort_nodes[::-1]
 
